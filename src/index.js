@@ -1,7 +1,7 @@
 const path = require("path");
 require("dotenv").config({path: path.resolve(__dirname,'../config/.env')});
 require('../database/DBconnect')
-//const deviceDataRouter = require("../router/deviceDataRouter");
+const deviceDataRouter = require("../router/deviceDataRouter");
 const ecoliRouter = require("../router/ecoliRouter")
 const userRouter = require("../router/userRouter")
 
@@ -15,6 +15,7 @@ app.use(express.urlencoded({extended:false}));
 
 app.use('/api/userdata',userRouter);
 app.use('/api/ecolidata',ecoliRouter);
+app.use('/api/devicedata',deviceDataRouter);
 // app.use('/api/devicedata',deviceDataRouter);
 
 

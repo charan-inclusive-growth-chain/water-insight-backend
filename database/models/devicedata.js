@@ -26,6 +26,20 @@ const deviceDataschema = new Schema({
     type: String,
     required: true,
   },
+  K_mean_RG: {
+    type:Number,
+    required:false,
+  },
+  Secchi_Depth: {
+    type:Number,
+    required:false,
+  },
+  Turbidity: {
+    type:Number,
+    required:false,
+  },
+  
+
 });
 
 

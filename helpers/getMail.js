@@ -1,3 +1,4 @@
+const path = require("path");
 require("dotenv").config({path: '../config/.env'});
 const axios = require("axios");
 const { generateConfig } = require("./utils");
@@ -68,7 +69,8 @@ async function getMails(email) {
 
       returnObj["date"] = messageDate;
       // console.log("Date:" + messageDate);
-      const folderPath = "../public/images";
+      // const folderPath = "../public/images";
+      const folderPath = path.join(__dirname, "../public/images")
       let fileName;
       // Loop through all parts of the message payload
       for (const part of parts) {
@@ -112,10 +114,12 @@ async function getMails(email) {
     }
 
 
-    mongoose.connection.close();
+    
   } catch (error) {
     console.log(error);
   }
 }
 
-getMails("igcatisb@gmail.com");
+// getMails("igcatisb@gmail.com");
+
+module.exports = getMails;

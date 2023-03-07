@@ -1,26 +1,39 @@
+const path = require("path");
+require("dotenv").config({path: path.resolve(__dirname,'../config/.env')});
 const {Router} = require('express');
 const Ecoli = require("../database/models/ecoli");
 const axios = require("axios");
 const moment = require("moment");
+const auth = require("../middleware/auth")
 
 const router = new Router();
 
-router.get("/results", async (req, res) => {
+router.get("/results",auth,  async (req, res) => {
   try {
     const docs = await Ecoli.find({});
     if (!docs) {
-      return res.status(400).send({});
+      return res.status(200).send({
+        status_code:200,
+        message:"No Records Found! Please Refresh to fetch Data"
+
+      });
     }
-    res.status(200).send(docs);
+    res.status(200).send({
+      status_code:200,
+      data:docs,
+    });
   } catch (e) {
-    res.status(500).send(e);
+    res.status(500).send({
+      status_code:500,
+      message:"DataBase Error"
+    });
   }
 });
 
-router.post("/refresh", async (req, res) => {
+router.post("/refresh", auth, async (req, res) => {
   var config = {
     method: "get",
-    url: "https://api.thingspeak.com/channels/2002408/feeds.json?api_key=N6ZF1SSU0TB7YHDH",
+    url: process.env.THINGSPEAK_API_URL,
     headers: {},
   };
 
@@ -111,12 +124,18 @@ router.post("/refresh", async (req, res) => {
         }).exec();
         updateDocs.push(doc);
       }
-      console.log("Updated", updateDocs);
-      res.status(200).send(updateDocs);
+      // console.log("Updated", updateDocs);
+      res.status(200).send({
+        status_code:200,
+        message:"Succesfully Updated Records."
+      });
     })
 
     .catch(function (error) {
-      res.status(500).send(error);
+      res.status(500).send({
+        status_code:500,
+        message:"Server Error."
+      });
       console.log(error);
     });
 });
