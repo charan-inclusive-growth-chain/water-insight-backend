@@ -9,8 +9,8 @@ router.post('/users/signup', async (req, res) => {
         const user = new User(req.body)
         await user.save()
         res.status(201).send({
-            "status_code":200,
-            "message":"User signed up ",
+            status_code:200,
+            message:"User signed up ",
         })
     } catch (e) {
         console.log(e);
