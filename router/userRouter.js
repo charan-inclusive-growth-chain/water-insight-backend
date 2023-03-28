@@ -1,9 +1,10 @@
 const express = require('express')
 const User = require('../database/models/User');
+const payments = require("../database/models/Payments")
 const auth = require('../middleware/auth')
 const router = new express.Router()
 
-router.post('/users/signup', async (req, res) => {
+router.post('/signup', async (req, res) => {
     
     try {
         const user = new User(req.body)
@@ -38,7 +39,7 @@ router.post('/users/signup', async (req, res) => {
     }
 })
 
-router.post('/users/login', async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         
         const user = await User.findByCredentials(req.body.email, req.body.password)
@@ -70,7 +71,7 @@ router.post('/users/login', async (req, res) => {
 
 
 
-router.post('/users/logout', auth, async (req, res) => {
+router.post('/logout', auth, async (req, res) => {
     try {
         req.user.tokens = []
         await req.user.save()
@@ -82,29 +83,29 @@ router.post('/users/logout', auth, async (req, res) => {
         )
     } catch (e) {
         res.status(500).send({
-            "status_code":500,
-            "message":"Request Failed, Couldn't logout user"
+            status_code:500,
+            message:"Request Failed, Couldn't logout user"
         })
     }
 })
 
-router.get('/users/me', auth, async (req, res) => {
+router.post('/get/profile', auth, async (req, res) => {
     res.send({
-        "status_code":200,
-        "message":"User Profile Found",
+        status_code:200,
+        message:"User Profile Found",
         "data":req.user,
     })
 })
 
-router.patch('/users/me', auth, async (req, res) => {
+router.post('/update/profile', auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['firstname', 'lastname', 'email', 'phone', 'walletId']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
     if (!isValidOperation) {
         return res.status(400).send({
-            "status_code":400,
-            "message":"Invalid updates",
+            status_code:400,
+            message:"Invalid updates",
          })
     }
 
@@ -112,15 +113,31 @@ router.patch('/users/me', auth, async (req, res) => {
         updates.forEach((update) => req.user[update] = req.body[update])
         await req.user.save()
         res.send({
-            "status_code":200,
-            "message":"succesfully updated!",
+            status_code:200,
+            message:"succesfully updated!",
             "data":req.user,
         })
     } catch (e) {
         res.status(500).send({
-            "status_code":500,
-            "message":"Request Failed, Couldn't update profile"
+            status_code:500,
+            message:"Request Failed, Couldn't update profile"
         })
+    }
+})
+
+router.post("/getpayments",auth,  async (req,res) => {
+    try {
+        const email = await req.user.email;
+        const paymentRecords = await payments.find({email});
+        console.log(paymentRecords);
+        res.send({
+            status_code:200,
+            data:paymentRecords,
+        })
+        
+
+    }catch(error){
+        res.status(500).send(error.message)
     }
 })
 

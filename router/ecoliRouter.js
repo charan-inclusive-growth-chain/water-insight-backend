@@ -2,13 +2,14 @@ const path = require("path");
 require("dotenv").config({path: path.resolve(__dirname,'../config/.env')});
 const {Router} = require('express');
 const Ecoli = require("../database/models/ecoli");
+const Contributions = require("../database/models/Contributions")
 const axios = require("axios");
 const moment = require("moment");
 const auth = require("../middleware/auth")
 
 const router = new Router();
 
-router.get("/results",auth,  async (req, res) => {
+router.post("/results",auth,  async (req, res) => {
   try {
     const docs = await Ecoli.find({});
     if (!docs) {
@@ -39,6 +40,7 @@ router.post("/refresh", auth, async (req, res) => {
 
   await axios(config)
     .then(async function (response) {
+      const channelId = response.data.channel.id;
       const feeds = response.data.feeds;
       const datetimeFormat = "YYYY-MM-DDTHH:mm:ssZ";
       var resultObject = [];
@@ -46,11 +48,11 @@ router.post("/refresh", auth, async (req, res) => {
       const totalFeeds = feeds.length;
 
       //Random ID Generation
-      var RandomList = [];
-      while (RandomList.length < totalFeeds) {
-        var r = Math.floor(Math.random() * 100) + 1;
-        if (RandomList.indexOf(r) === -1) RandomList.push(r);
-      }
+      // var RandomList = [];
+      // while (RandomList.length < totalFeeds) {
+      //   var r = Math.floor(Math.random() * 100) + 1;
+      //   if (RandomList.indexOf(r) === -1) RandomList.push(r);
+      // }
 
       var i = 1;
       var initialTime = feeds[0].created_at;
@@ -59,6 +61,7 @@ router.post("/refresh", auth, async (req, res) => {
           ...Object.values(feeds[0]).slice(3).map(parseFloat)
         ),
       });
+      
       resultObject[item].Date = initialTime;
       var diff = 0;
       while (i < totalFeeds) {
@@ -98,7 +101,8 @@ router.post("/refresh", auth, async (req, res) => {
       // Status, Percentage  and DeviceID Fields Assignment
       resultObject.map((feed, i) => {
         feed.percentage = parseInt((feed.EndedValue / feed.StartedValue) * 100);
-        feed.id = RandomList[i];
+        feed.id = "igcatisb@gmail.com";
+        feed.channelId = channelId;
         if (feed.percentage > 50) {
           feed.status = "Normal";
         } else if (feed.percentage > 20) {
@@ -115,14 +119,21 @@ router.post("/refresh", auth, async (req, res) => {
       resultObject = filteredResult;
       //console.log(resultObject);
 
-      const updateDocs = [];
+      
 
       for (const result of resultObject) {
-        const doc = await Ecoli.findOneAndUpdate({ Date: result.Date }, result, {
+        await Ecoli.findOneAndUpdate({ Date: result.Date }, result, {
+          $setOnInsert: result ,
           upsert: true,
           new: true,
         }).exec();
-        updateDocs.push(doc);
+
+        await Contributions.findOneAndUpdate({Date:result.Date},{...result,DataType:'ecoli', email:result.id},{
+          upsert:true,
+          new:true,
+        }).exec();
+        
+
       }
       // console.log("Updated", updateDocs);
       res.status(200).send({

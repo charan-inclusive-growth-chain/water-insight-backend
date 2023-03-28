@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/Water-Insight-DB", {
+  .connect("mongodb+srv://testmailpush2:Hello123@cluster0.bilvv1r.mongodb.net/waterinsight?retryWrites=true&w=majority", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     

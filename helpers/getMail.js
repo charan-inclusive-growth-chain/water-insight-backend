@@ -6,6 +6,7 @@ const { google } = require("googleapis");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const Mail = require("../database/models/devicedata");
+const Contributions = require("../database/models/Contributions")
 
 console.log(process.env.CLIENT_ID, process.env.CLIENT_SECRET);
 
@@ -67,7 +68,7 @@ async function getMails(email) {
         parseInt(messageResponse.data.internalDate, 10)
       ).toLocaleString();
 
-      returnObj["date"] = messageDate;
+      returnObj["Date"] = new Date(messageDate).toISOString();
       // console.log("Date:" + messageDate);
       // const folderPath = "../public/images";
       const folderPath = path.join(__dirname, "../public/images")
@@ -111,6 +112,11 @@ async function getMails(email) {
           { $setOnInsert: returnObj },
           { upsert: true, new: true }
         ).exec();
+
+        await Contributions.findOneAndUpdate({Date:returnObj.Date},{...returnObj,DataType:'devicedata', email:returnObj.deviceId},{
+          upsert:true,
+          new:true,
+        }).exec();
     }
 
 

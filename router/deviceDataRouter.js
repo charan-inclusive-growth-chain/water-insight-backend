@@ -19,8 +19,9 @@ router.post("/refresh/:email", auth,  async (req,res) => {
 
 })
 
-router.get("/imagedata",auth,  async (req,res) => {
-  const imgDir = "C:/WORK/icg/water-insight/igc-water-insight-backend/public/images/";
+router.post("/results",auth,  async (req,res) => {
+  var count = 0;
+  const imgDir = process.env.IMAGES_DIR
   const imgPaths = await fs.promises.readdir(imgDir);
   let responseData = []
   for (const imgPath of imgPaths) {
@@ -41,7 +42,8 @@ router.get("/imagedata",auth,  async (req,res) => {
       imageDetails.K_mean_RG = response.data["K_mean_RG"];
       imageDetails.Secchi_Depth = response.data["Secchi_Depth"];
       imageDetails.Turbidity = response.data["Turbidity"];
-      const result = await imageDetails.save();
+      await imageDetails.save();
+      console.log(response.data["Secchi_Depth"], response.data["Turbidity"])
  
       const updatedDetails = {
         ...imageDetails.toObject(),
@@ -56,10 +58,14 @@ router.get("/imagedata",auth,  async (req,res) => {
       // console.log(`Processed image: ${imgPath}`);
      
     } catch (error) {
-      res.status(400).send({
-        status_code:400,
-        message:`Error processing image ${imgPath}: ${error}`
-      })
+      count = count+1;
+      // res.status(400).send({
+      //   status_code:400,
+      //   message:`Error processing image ${imgPath}: ${error}`
+      // })
+      console.log(`Error processing image ${imgPath}: ${error}`);
+      console.log(count);
+      continue 
     }
     
   }
@@ -71,3 +77,5 @@ router.get("/imagedata",auth,  async (req,res) => {
 
 module.exports = router;
 
+
+// email: igcatisb@gmail.com

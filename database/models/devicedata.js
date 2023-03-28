@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
+const crypto = require("crypto")
 const Schema = mongoose.Schema;
+
 
 const deviceDataschema = new Schema({
   deviceId: {
@@ -18,7 +20,7 @@ const deviceDataschema = new Schema({
     type: String,
     required: true,
   },
-  date: {
+  Date: {
     type: String,
     required: true,
   },
@@ -38,8 +40,23 @@ const deviceDataschema = new Schema({
     type:Number,
     required:false,
   },
+  verifyId:{
+    type:Number,
+    required:false,
+  },
+  hash: {
+    type: String,
+    required: false,
+  }
   
 
+});
+
+deviceDataschema.pre('findOneAndUpdate', function (next) {
+  const data = `${this.get('deviceId')} + ${this.get('subject')} + ${this.get('fileName')} + ${this.get('message')} + ${this.get('date')} + ${this.get('uniqueMessageId')} + ${this.get('K_mean_RG')} + ${this.get('Secchi_Depth')} + ${this.get('Turbidity')}`;
+  const hash = crypto.createHash('sha256').update(data).digest('hex');
+  this.set('hash',hash)
+  next();
 });
 
 

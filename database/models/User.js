@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    enum: ['receiver', 'contributor', 'admin'],
     required: true
   },
   phone: {
@@ -70,6 +71,12 @@ userSchema.virtual('orders', {
   localField: '_id',
   foreignField: 'owner'
 })
+
+// userSchema.virtual('devices',{
+//   ref:'Device',
+//   localField:'_id',
+//   foreignField:'owner'
+// })
 
 userSchema.methods.toJSON = function () {
     const user = this
